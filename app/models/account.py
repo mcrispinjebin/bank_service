@@ -4,9 +4,8 @@ from pydantic import BaseModel, condecimal
 from .user import UserID, FirstName, Email, Nationality
 from enum import Enum
 
-
-AccountID = NewType("AccountID", int)
-AccountBalance = condecimal(decimal_places=2)
+AccountID = NewType("AccountID", str)
+AccountBalance = condecimal(decimal_places=2, ge=0)
 
 
 class AccountType(Enum):
@@ -15,8 +14,8 @@ class AccountType(Enum):
 
 
 class AccountStatus(Enum):
-   active = "active"
-   inactive = "inactive"
+    active = "active"
+    inactive = "inactive"
 
 
 class Account(BaseModel):
@@ -35,6 +34,10 @@ class CreateAccountPayload(BaseModel):
     nation: Nationality
     account_type: AccountType
     initial_deposit: AccountBalance
+
+
+class User(CreateAccountPayload):
+    user_id: UserID
 
 
 class UpdateAccount(BaseModel):

@@ -1,11 +1,10 @@
 import logging
-
-import mariadb
+import mysql.connector
 
 from app.config import env
 
 
-class MariaDBConnector(object):
+class MySQLDBConnector(object):
 
     def __init__(self):
         self.db_conn = None
@@ -20,52 +19,38 @@ class MariaDBConnector(object):
         :return:
         """
         try:
-            self.db_conn = mariadb.connect(
+            self.db_conn = mysql.connector.connect(
                 user=self.db_properties.get('user'),
-                password=self.db_properties.get('password'),
+                passwd=self.db_properties.get('password'),
                 host=self.db_properties.get('host'),
                 port=self.db_properties.get('port'),
-                database=self.db_properties.get('database')
+                db=self.db_properties.get('database')
             )
             return self.db_conn
-        except mariadb.Error as exception:
+        except Exception as exception:
             logging.exception("Exception in Creating DB connection: ", exception)
             raise
 
-    def process_query(self, query, arguments=None, fetch_result=True, bulk_insert=False, count=None, dictionary=True):
+    def process_query(self, query, arguments=None, fetch_result=True):
         """
-        Method to execute the query and return the obtained result
+            Method for DB Wrapper to process query
         :param query:
         :param arguments:
         :param fetch_result:
-        :param bulk_insert:
-        :param count:
-        :param dictionary:
         :return:
         """
         try:
-            cursor = self.db_conn.cursor(dictionary=dictionary)
-            result = None
-            if bulk_insert:
-                cursor.executemany(query, arguments)
+            cursor = self.db_conn.cursor(dictionary=True)
+
+            cursor.execute(query, arguments)
+            if fetch_result:
+                result = cursor.fetchall()
             else:
-                cursor.execute(query, arguments)
-                if fetch_result:
-                    result = cursor.fetchall()
-                    if not dictionary:
-                        result_set = []
-                        for row in result:
-                            result_set.append(row[0])
-                        result = result_set
-                    else:
-                        if count:
-                            result = result[:count]
-                else:
-                    result = cursor.lastrowid
+                result = cursor.lastrowid
             return result
 
-        except mariadb.Error as exception:
-            logging.error("Exception in processing query: ", exception)
+        except Exception as exception:
+            logging.error("Exception in processing query: %s" % exception)
             raise
 
     def save_transaction(self):

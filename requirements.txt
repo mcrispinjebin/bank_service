@@ -1,4 +1,6 @@
 fastapi==0.66.0
 pydantic==1.8.2
 uvicorn==0.14.0
-mariadb==1.0.7
+mysql-connector-python==8.0.28
+pytest
+cuid
